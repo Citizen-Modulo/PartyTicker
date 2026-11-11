@@ -1,0 +1,8 @@
+## Interface: 11509, 16001, 20506, 38002, 50504, 120100, 120105
+## Title: PartyTicker
+## Notes: Scrollt Party-Chat als Laufschrift am oberen Bildschirmrand.
+## Author: PartyTicker
+## Version: 1.0.0
+## SavedVariables: PartyTickerDB
+
+PartyTicker.lua
