@@ -1,16 +1,16 @@
-   1 name: Release
-   2 on:
-   3   push:
-   4     tags:
-   5       - '*'
-   6 jobs:
-   7   release:
-   8     runs-on: ubuntu-latest
-   9     steps:
-  10       - uses: actions/checkout@v4
-  11         with:
-  12           fetch-depth: 0
-  13       - uses: BigWigsMods/packager@v2
-  14         env:
-  15           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
-  16           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: BigWigsMods/packager@v2
+        env:
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
