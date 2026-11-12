@@ -16,6 +16,10 @@ local defaults = {
     relativePoint = "TOP",
     x = 0,
     y = -40,
+    font = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF",
+    backgroundAlpha = 0.58,
+    customColorEnabled = false,
+    customColor = { r = 0.67, g = 0.67, b = 1 },
 }
 
 local queue = {}
@@ -61,6 +65,9 @@ if not hasNativeClipping then
 end
 
 local function getChatColor(chatType)
+    if db and db.customColorEnabled and type(db.customColor) == "table" then
+        return db.customColor.r or 0.67, db.customColor.g or 0.67, db.customColor.b or 1
+    end
     local info = ChatTypeInfo and (ChatTypeInfo[chatType] or ChatTypeInfo.PARTY or ChatTypeInfo.PARTY_LEADER)
     if info then
         return info.r or 0.67, info.g or 0.67, info.b or 1
@@ -160,10 +167,16 @@ local function prepareFallback(value, r, g, b)
 end
 
 local function applyFontSize()
-    local fontFile = text:GetFont()
+    local fontFile = (db and db.font) or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
     local size = db and db.size or DEFAULT_SIZE
     text:SetFont(fontFile, size, "OUTLINE")
     ticker:SetHeight(math.max(FRAME_HEIGHT, size + 12))
+    if db and db.backgroundAlpha ~= nil then
+        background:SetTexture(0, 0, 0, db.backgroundAlpha)
+        if not hasNativeClipping then
+            for i = 1, #edgeMasks do edgeMasks[i]:SetTexture(0, 0, 0, db.backgroundAlpha) end
+        end
+    end
     if not hasNativeClipping and active then
         local value = text:GetText() or ""
         local r, g, b = text:GetTextColor()
@@ -268,14 +281,35 @@ ticker:SetScript("OnEvent", function(self, event, ...)
         PartyTickerDB = type(PartyTickerDB) == "table" and PartyTickerDB or {}
         db = PartyTickerDB
         for key, value in pairs(defaults) do
-            if db[key] == nil then db[key] = value end
+            if db[key] == nil then
+                if type(value) == "table" then
+                    local copy = {}
+                    for subkey, subvalue in pairs(value) do copy[subkey] = subvalue end
+                    db[key] = copy
+                else
+                    db[key] = value
+                end
+            elseif type(value) == "table" and type(db[key]) == "table" then
+                for subkey, subvalue in pairs(value) do
+                    if db[key][subkey] == nil then db[key][subkey] = subvalue end
+                end
+            end
         end
         db.speed = math.max(MIN_SPEED, math.min(MAX_SPEED, tonumber(db.speed) or DEFAULT_SPEED))
         db.size = math.max(MIN_SIZE, math.min(MAX_SIZE, tonumber(db.size) or DEFAULT_SIZE))
-        applyFontSize()
+        if type(db.font) ~= "string" or db.font == "" then db.font = defaults.font end
         db.raid = db.raid and true or false
         db.guild = db.guild ~= false
         db.officer = db.officer and true or false
+        if type(db.customColor) ~= "table" then
+            db.customColor = { r = defaults.customColor.r, g = defaults.customColor.g, b = defaults.customColor.b }
+        end
+        db.customColorEnabled = db.customColorEnabled and true or false
+        db.backgroundAlpha = math.max(0, math.min(1, tonumber(db.backgroundAlpha) or 0.58))
+        for _, channel in ipairs({ "r", "g", "b" }) do
+            db.customColor[channel] = math.max(0, math.min(1, tonumber(db.customColor[channel]) or defaults.customColor[channel]))
+        end
+        applyFontSize()
         applyPosition()
         setLocked(db.locked ~= false)
         registerChatEvents()
@@ -356,19 +390,63 @@ SlashCmdList.PARTYTICKER = function(input)
         enqueue("PartyTicker is ready!", UnitName("player") or "Test", "Party", "PARTY")
         enqueue("Guild chat is displayed as a ticker.", UnitName("player") or "Test", "Guild", "GUILD")
     elseif command == "lock" then
+        savePosition()
         setLocked(true)
-        print("PartyTicker: Position locked.")
+        print("PartyTicker: Position saved and locked.")
+    elseif command == "setup" then
+        setLocked(false)
+        print("PartyTicker: Setup mode — drag the ticker, then use /pticker lock to save and lock its position.")
+    elseif command == "font" then
+        local fontPath = string.match(input or "", "^%s*%S+%s+(.+)%s*$")
+        if fontPath and fontPath ~= "" then
+            db.font = fontPath
+            applyFontSize()
+            print("PartyTicker: Font set to " .. db.font .. ".")
+        else
+            print("PartyTicker: Usage: /pticker font <font-file>")
+        end
+    elseif command == "color" then
+        if argument == "reset" then
+            db.customColorEnabled = false
+            print("PartyTicker: Chat colors restored.")
+        else
+            local red, green, blue = string.match(input or "", "^%s*color%s+([%d%.]+)%s+([%d%.]+)%s+([%d%.]+)%s*$")
+            red, green, blue = tonumber(red), tonumber(green), tonumber(blue)
+            if red and green and blue and red >= 0 and red <= 1 and green >= 0 and green <= 1 and blue >= 0 and blue <= 1 then
+                db.customColor.r, db.customColor.g, db.customColor.b = red, green, blue
+                db.customColorEnabled = true
+                print("PartyTicker: Custom text color saved (RGB 0-1).")
+            else
+                print("PartyTicker: Usage: /pticker color <r> <g> <b> (0-1) | color reset")
+            end
+        end
+    elseif command == "background" then
+        local alpha = tonumber(argument)
+        if alpha and alpha >= 0 and alpha <= 1 then
+            db.backgroundAlpha = alpha
+            applyFontSize()
+            print("PartyTicker: Background opacity set to " .. alpha .. ".")
+        else
+            print("PartyTicker: Usage: /pticker background <opacity 0-1>")
+        end
     elseif command == "unlock" then
         setLocked(false)
         print("PartyTicker: Drag the ticker with the left mouse button.")
     elseif command == "reset" then
-        for key, value in pairs(defaults) do db[key] = value end
+        for key, value in pairs(defaults) do
+            if type(value) == "table" then
+                db[key] = {}
+                for subkey, subvalue in pairs(value) do db[key][subkey] = subvalue end
+            else
+                db[key] = value
+            end
+        end
         applyFontSize()
         applyPosition()
         setLocked(true)
         registerChatEvents()
         print("PartyTicker: Settings reset.")
     else
-        print("PartyTicker: /pticker speed <number> | size <number> | raid on/off | guild on/off | officer on/off | status | test | lock | unlock | reset")
+        print("PartyTicker: /pticker setup | lock | unlock | speed <number> | size <number> | font <font-file> | color <r> <g> <b> or color reset | background <0-1> | raid on/off | guild on/off | officer on/off | status | test | reset")
     end
 end

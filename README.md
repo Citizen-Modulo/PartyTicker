@@ -1,5 +1,3 @@
----
-
 # PartyTicker
 
 **Your party and guild chat as a smooth scrolling ticker at the top of your screen, like a news crawl.**
@@ -48,4 +46,3 @@ PartyTicker shows incoming Party, Guild and optional Officer messages as a horiz
 - Settings are saved per account.
 - If you find a bug or have a feature request, please leave a comment on this page.
 
----
