@@ -25,7 +25,7 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Ticker position was lost after relog, death or reload.
 
-## [0.9.ß] - 2026-11-01
+## [0.9.0] - 2026-11-01
 
 ### Added
 - Scrolling ticker bar at the top center of the screen (designed for 1920x1080).
@@ -39,6 +39,6 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - `/pticker test` to preview the ticker without a group.
 - `/pticker reset` to restore default settings.
 
-[Unreleased]: https://codeberg.org/tastytactics/PartyTicker/compare/v1.1.0...HEAD
-[1.1.0]: https://codeberg.org/tastytactics/PartyTicker/compare/v1.0.0...v1.1.0
-[1.0.0]: https://codeberg.org/tastytactics/PartyTicker/releases/tag/v1.0.0
+[Unreleased]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/Citizen-Modulo/PartyTicker/releases/tag/v1.0.0
