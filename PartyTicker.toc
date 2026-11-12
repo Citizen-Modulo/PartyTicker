@@ -2,6 +2,7 @@
 ## Title: PartyTicker
 ## Notes: Displays party chat as a ticker across the top of the screen.
 ## Author: TastyTactics
+## X-Wago-ID: Q6aqZA6W
 ## Version: 1.1.0
 ## SavedVariables: PartyTickerDB
 
