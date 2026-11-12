@@ -7,7 +7,7 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-11-12
+## [1.0.0] - 2026-11-12
 
 ### Added
 - One-time setup: `/pticker setup` makes the ticker movable, `/pticker lock` saves its position permanently.
@@ -25,7 +25,7 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Ticker position was lost after relog, death or reload.
 
-## [1.0.0] - 2026-11-01
+## [0.9.ß] - 2026-11-01
 
 ### Added
 - Scrolling ticker bar at the top center of the screen (designed for 1920x1080).
