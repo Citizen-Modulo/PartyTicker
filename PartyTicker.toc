@@ -3,7 +3,7 @@
 ## Notes: Displays party chat as a ticker across the top of the screen.
 ## Author: TastyTactics
 ## X-Wago-ID: Q6aqZA6W
-## Version: 1.2.0
+## Version: @project-version@
 ## SavedVariables: PartyTickerDB
 
 PartyTicker.lua
