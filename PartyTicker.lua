@@ -31,6 +31,7 @@ local textX = FRAME_WIDTH + 1
 local ticker = CreateFrame("Frame", "PartyTickerFrame", UIParent)
 ticker:SetSize(FRAME_WIDTH, FRAME_HEIGHT)
 ticker:SetFrameStrata("HIGH")
+ticker:SetClampedToScreen(true)
 ticker:Hide()
 
 local background = ticker:CreateTexture(nil, "BACKGROUND")
@@ -77,7 +78,7 @@ end
 
 local function savePosition()
     if not db then return end
-    local point, relativeTo, relativePoint, x, y = ticker:GetPoint(1)
+    local point, _, relativePoint, x, y = ticker:GetPoint(1)
     if point then
         db.point = point
         db.relativePoint = relativePoint or point
@@ -93,7 +94,20 @@ local function applyPosition()
     ticker:SetPoint(point, UIParent, relativePoint, db.x or 0, db.y or -40)
 end
 
-local function setLocked(locked)
+local setLocked
+
+local function onDragStart(self)
+    self:StartMoving()
+end
+
+local function onDragStop(self)
+    self:StopMovingOrSizing()
+    savePosition()
+    setLocked(true)
+    print("PartyTicker: Position saved and locked.")
+end
+
+setLocked = function(locked)
     db.locked = locked and true or false
     ticker:SetMovable(not db.locked)
     ticker:EnableMouse(not db.locked)
@@ -101,19 +115,14 @@ local function setLocked(locked)
         ticker:RegisterForDrag()
         ticker:SetScript("OnDragStart", nil)
         ticker:SetScript("OnDragStop", nil)
+        if not active then
+            ticker:Hide()
+            text:SetText("")
+        end
     else
         ticker:RegisterForDrag("LeftButton")
-        ticker:SetScript("OnDragStart", function(self)
-            self:StartMoving()
-        end)
-        ticker:SetScript("OnDragStop", function(self)
-            self:StopMovingOrSizing()
-            savePosition()
-            if not active then
-                self:Hide()
-                text:SetText("")
-            end
-        end)
+        ticker:SetScript("OnDragStart", onDragStart)
+        ticker:SetScript("OnDragStop", onDragStop)
         if not active then
             text:SetText("PartyTicker — Drag to move")
             local r, g, b = getChatColor()
@@ -187,10 +196,22 @@ end
 local function startNext()
     if #queue == 0 then
         active = false
-        ticker:Hide()
-        text:SetText("")
-        text:Show()
         hideFallbackGlyphs()
+        -- Keep the ticker visible while in setup mode, otherwise hide it.
+        if db and not db.locked then
+            text:SetText("PartyTicker — Drag to move")
+            local r, g, b = getChatColor()
+            text:SetTextColor(r, g, b)
+            text:ClearAllPoints()
+            text:SetPoint("LEFT", ticker, "LEFT", 10, 0)
+            text:SetWidth(FRAME_WIDTH - 20)
+            text:Show()
+            ticker:Show()
+        else
+            ticker:Hide()
+            text:SetText("")
+            text:Show()
+        end
         return
     end
     active = true
@@ -311,8 +332,12 @@ ticker:SetScript("OnEvent", function(self, event, ...)
         end
         applyFontSize()
         applyPosition()
-        setLocked(db.locked ~= false)
+        -- Always start locked: setup mode is never restored automatically.
+        setLocked(true)
         registerChatEvents()
+    elseif event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD" then
+        -- Safety net: persist the current position when leaving the world.
+        if db and ticker:GetPoint(1) then savePosition() end
     elseif event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_PARTY_LEADER" then
         local message, author = ...
         enqueue(message, author, "Party", "PARTY")
@@ -328,6 +353,8 @@ ticker:SetScript("OnEvent", function(self, event, ...)
     end
 end)
 ticker:RegisterEvent("ADDON_LOADED")
+ticker:RegisterEvent("PLAYER_LOGOUT")
+ticker:RegisterEvent("PLAYER_LEAVING_WORLD")
 
 SLASH_PARTYTICKER1 = "/pticker"
 SlashCmdList.PARTYTICKER = function(input)
@@ -393,9 +420,9 @@ SlashCmdList.PARTYTICKER = function(input)
         savePosition()
         setLocked(true)
         print("PartyTicker: Position saved and locked.")
-    elseif command == "setup" then
+    elseif command == "setup" or command == "unlock" then
         setLocked(false)
-        print("PartyTicker: Setup mode — drag the ticker, then use /pticker lock to save and lock its position.")
+        print("PartyTicker: Setup mode — drag the ticker with the left mouse button. It saves and locks automatically when you release it.")
     elseif command == "font" then
         local fontPath = string.match(input or "", "^%s*%S+%s+(.+)%s*$")
         if fontPath and fontPath ~= "" then
@@ -429,9 +456,6 @@ SlashCmdList.PARTYTICKER = function(input)
         else
             print("PartyTicker: Usage: /pticker background <opacity 0-1>")
         end
-    elseif command == "unlock" then
-        setLocked(false)
-        print("PartyTicker: Drag the ticker with the left mouse button.")
     elseif command == "reset" then
         for key, value in pairs(defaults) do
             if type(value) == "table" then
@@ -447,6 +471,6 @@ SlashCmdList.PARTYTICKER = function(input)
         registerChatEvents()
         print("PartyTicker: Settings reset.")
     else
-        print("PartyTicker: /pticker setup | lock | unlock | speed <number> | size <number> | font <font-file> | color <r> <g> <b> or color reset | background <0-1> | raid on/off | guild on/off | officer on/off | status | test | reset")
+        print("PartyTicker: /pticker setup | lock | speed <number> | size <number> | font <font-file> | color <r> <g> <b> or color reset | background <0-1> | raid on/off | guild on/off | officer on/off | status | test | reset")
     end
 end

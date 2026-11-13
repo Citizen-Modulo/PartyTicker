@@ -7,6 +7,33 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-13
+
+### Added
+- The ticker position is now also saved automatically on logout and when leaving the world (`PLAYER_LOGOUT`, `PLAYER_LEAVING_WORLD`) as a safety net.
+- `/pticker unlock` is now an alias for `/pticker setup`.
+
+### Changed
+- The ticker now always starts locked after login, death or reload. Setup mode is never restored automatically.
+- After dragging the ticker in setup mode, the position is saved and locked automatically on release. `/pticker lock` is no longer required.
+- Position saving is more robust: the full anchor (point, relative point, x/y offsets) is stored reliably after moving.
+- The ticker is clamped to the screen, so it can no longer end up outside the visible area.
+- The drag hint is hidden correctly when the ticker is locked while idle.
+- Resetting to defaults now always results in a locked ticker.
+
+### Fixed
+- Ticker appeared in the screen center with "Drag to move" after every death, relog or reload, because setup mode stayed active and the position was not saved.
+- Ticker position was lost when leaving setup mode without running `/pticker lock`.
+
+## [1.1.0] - 2026-11-13
+
+### Added
+- `/pticker guild` and `/pticker officer` to toggle those chat channels, with `on` and `off` arguments also supported.
+
+### Changed
+- Save the ticker's anchor point, relative anchor, and x/y offsets when saving its position.
+- Show a drag instruction in movable mode and clear it when the ticker is locked while idle.
+
 ## [1.0.0] - 2026-11-12
 
 ### Added
@@ -39,6 +66,8 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - `/pticker test` to preview the ticker without a group.
 - `/pticker reset` to restore default settings.
 
-[Unreleased]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/Citizen-Modulo/PartyTicker/releases/tag/v1.0.0
+[1.0.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v0.9.0...v1.0.0
+[0.9.0]: https://github.com/Citizen-Modulo/PartyTicker/releases/tag/v0.9.0
