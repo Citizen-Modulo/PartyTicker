@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-13
+
+### Changed
+- The TOC now uses `## Version: @project-version@`, so the addon version is set automatically from the release tag.
+
 ## [1.2.0] - 2026-11-13
 
 ### Added
@@ -66,7 +71,8 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - `/pticker test` to preview the ticker without a group.
 - `/pticker reset` to restore default settings.
 
-[Unreleased]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Citizen-Modulo/PartyTicker/compare/v0.9.0...v1.0.0
